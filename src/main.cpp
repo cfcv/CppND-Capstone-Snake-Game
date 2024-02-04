@@ -5,8 +5,12 @@
 #include "user.h"
 
 int main() {
-  constexpr std::size_t kFramesPerSecond{100};
-  constexpr std::size_t kMsPerFrame{1000 / kFramesPerSecond};
+  // ----- read frames per second
+  int fps;
+  std::cout << "What speed(fps) would you like to play? (default 60): ";
+  std::cin >> fps;
+  const std::size_t kFramesPerSecond = (std::size_t)fps;
+  const std::size_t kMsPerFrame{1000 / kFramesPerSecond};
   constexpr std::size_t kScreenWidth{640};
   constexpr std::size_t kScreenHeight{640};
   constexpr std::size_t kGridWidth{32};
