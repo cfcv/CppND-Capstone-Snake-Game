@@ -30,6 +30,13 @@ In this project, you can build your own C++ application or extend this Snake gam
 3. Compile: `cmake .. && make`
 4. Run it: `./SnakeGame`.
 
+## Extensions
+
+## Project rubric
+- [X] A README with instructions is included with the project
+- [X] The README indicates the new features you added to the game
+- [X] The README includes information about each rubric point addressed
+
 
 ## CC Attribution-ShareAlike 4.0 International
 
