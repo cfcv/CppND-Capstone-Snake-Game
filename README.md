@@ -31,12 +31,37 @@ In this project, you can build your own C++ application or extend this Snake gam
 4. Run it: `./SnakeGame`.
 
 ## Extensions
+- Add possibility to store max user score into a file using the User cass and user namespace
 
 ## Project rubric
+### README
 - [X] A README with instructions is included with the project
 - [X] The README indicates the new features you added to the game
 - [X] The README includes information about each rubric point addressed
 
+### Compiling and Testing
+
+### Loops, Functions, I/O
+- [X] The project reads data from a file and process the data, or the program writes data to a file.
+Though the user class and namespace I keep and update the maximum reached score for every user.
+- [X] The project accepts user input and processes the input.
+Also through the User class and user namespace process input for user identification 
+- [X] The project uses data structures and immutable variables.
+Project uses vectors (vector of lines of input files) and uses constant variables in the argument of user namespace functions
+- [X] The project demonstrates an understanding of C++ functions and control structures.
+There are several loops and control flow and functions to abstract high commands and make code clearner
+
+### Object Oriented Programming
+ - [X] One or more classes are added to the project with appropriate access specifiers for class members.
+Class user was added
+ - [X] Class constructors utilize member initialization lists.
+ User class uses initialization list on the constructor. 
+
+### Memory Management
+- [X] The project makes use of references in function declarations.
+Majority of the functions added uses references 
+- [X] The project uses move semantics to move data instead of copying it, where possible.
+I used move semantics to move user object from main to last user namespace function as we won't need this object again in main
 
 ## CC Attribution-ShareAlike 4.0 International
 
