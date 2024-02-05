@@ -7,7 +7,8 @@ Game::Game(std::size_t grid_width, std::size_t grid_height)
     : snake(grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
-      random_h(0, static_cast<int>(grid_height - 1)) {
+      random_h(0, static_cast<int>(grid_height - 1)),
+      random_sleep(3, 8) {
 }
 
 Game::~Game(){
@@ -43,6 +44,27 @@ Game::~Game(){
     t.join();
     std::cout << "joined" << t.get_id() << std::endl;
   }
+}
+
+void Game::destroy_poison_foods(){
+  std::cout << "create poison food destroyer thread"  << std::this_thread::get_id() << std::endl;
+  while(true){
+    // sleep for a random time
+    int sleep_s = this->random_sleep(engine);
+    std::cout << "sleeping for " << sleep_s << "s" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(sleep_s));
+    std::cout << "poison food destroyer thread: try to lock " << std::this_thread::get_id() << std::endl;
+    std::unique_lock<std::mutex> uniq_lock(this->food_mutex);
+    if(!this->poison_food.empty()){
+      this->poison_food.erase(this->poison_food.begin());
+      this->_condition_poison_food.notify_one();
+    } 
+
+    if(!this->snake.alive){
+      break;
+    }  
+  }
+  std::cout << "Killing poison destroyer thread: " << std::this_thread::get_id() << std::endl;
 }
 
 void Game::create_poison_foods(){
@@ -146,7 +168,8 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   std::cout << "creating threads" << std::endl;
   this->_threads.emplace_back(std::thread(&Game::create_normal_foods, this));
   this->_threads.emplace_back(std::thread(&Game::create_poison_foods, this));
-
+  this->_threads.emplace_back(std::thread(&Game::destroy_poison_foods, this));
+  
   // lock to render foods (read from vectors and avoid data race)
   std::unique_lock<std::mutex> uniq_lock(this->food_mutex, std::defer_lock);
   while (running) {

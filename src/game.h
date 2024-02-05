@@ -23,6 +23,7 @@ class Game {
 
   void create_normal_foods();
   void create_poison_foods();
+  void destroy_poison_foods();
 
  private:
   Snake snake;
@@ -38,6 +39,7 @@ class Game {
   std::mt19937 engine;
   std::uniform_int_distribution<int> random_w;
   std::uniform_int_distribution<int> random_h;
+  std::uniform_int_distribution<int> random_sleep;
 
   int score{0};
 
