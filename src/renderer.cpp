@@ -38,7 +38,7 @@ Renderer::~Renderer() {
   SDL_Quit();
 }
 
-void Renderer::Render(Snake const snake, std::vector<NormalFood> &normal_food) {
+void Renderer::Render(Snake const snake, std::vector<NormalFood> &normal_food, std::vector<PoisonFood> &poison_food) {
   SDL_Rect block;
   block.w = screen_width / grid_width;
   block.h = screen_height / grid_height;
@@ -47,11 +47,23 @@ void Renderer::Render(Snake const snake, std::vector<NormalFood> &normal_food) {
   SDL_SetRenderDrawColor(sdl_renderer, 0x1E, 0x1E, 0x1E, 0xFF);
   SDL_RenderClear(sdl_renderer);
 
-  // Render food
+  // Render normal food
   if(!normal_food.empty()){
-    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xCC, 0x00, 0xFF);
-    block.x = normal_food[0].position.x * block.w;
-    block.y = normal_food[0].position.y * block.h;
+    NormalFood food = normal_food[0];
+    std::tuple<int,int,int,int> color = food.color_rgba;
+    SDL_SetRenderDrawColor(sdl_renderer, std::get<0>(color), std::get<1>(color), std::get<2>(color), std::get<3>(color));
+    block.x = food.position.x * block.w;
+    block.y = food.position.y * block.h;
+    SDL_RenderFillRect(sdl_renderer, &block);
+  }
+
+  // Render poison food
+  if(!poison_food.empty()){
+    PoisonFood pfood = poison_food[0];
+    std::tuple<int,int,int,int> color = pfood.color_rgba;
+    SDL_SetRenderDrawColor(sdl_renderer, std::get<0>(color), std::get<1>(color), std::get<2>(color), std::get<3>(color));
+    block.x = pfood.position.x * block.w;
+    block.y = pfood.position.y * block.h;
     SDL_RenderFillRect(sdl_renderer, &block);
   }
 

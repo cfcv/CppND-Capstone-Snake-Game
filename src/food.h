@@ -1,28 +1,29 @@
 #ifndef FOOD_H
 #define FOOD_H
 
-#include<string>
+#include<tuple>
 #include "snake.h"
 #include "SDL.h"
 
-// class Food {
-//     public:
-//         virtual void EatBy(Snake s) = 0;
-//         std::string color;
-//         SDL_Point position;
-// };
-
-// class Poison : public Food {
-
-// };
-
-class NormalFood{
+class Food {
     public:
-        // NormalFood();
-        // void EatBy(Snake s);
-
-        std::string color;
+        virtual void eatBy(Snake &s) = 0;
+        bool checkCell(int x, int y);
         SDL_Point position;
+};
+
+class PoisonFood : public Food {
+    public:
+        void eatBy(Snake &s);
+
+        static const std::tuple<int,int,int,int> color_rgba;
+};
+
+class NormalFood: public Food{
+    public:
+        void eatBy(Snake &s);
+
+        static const std::tuple<int,int,int,int> color_rgba;
 };
 
 // class SuperFood : public Food {

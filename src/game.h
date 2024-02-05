@@ -22,14 +22,17 @@ class Game {
   int GetSize() const;
 
   void create_normal_foods();
+  void create_poison_foods();
 
  private:
   Snake snake;
   std::vector<NormalFood> normal_food;
+  std::vector<PoisonFood> poison_food;
 
   std::vector<std::thread> _threads;
   std::mutex food_mutex;
   std::condition_variable _condition_normal_food;
+  std::condition_variable _condition_poison_food;
 
   std::random_device dev;
   std::mt19937 engine;
