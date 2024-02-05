@@ -1,4 +1,5 @@
 #include "game.h"
+#include "food.h"
 #include <iostream>
 #include "SDL.h"
 
@@ -7,7 +8,53 @@ Game::Game(std::size_t grid_width, std::size_t grid_height)
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
       random_h(0, static_cast<int>(grid_height - 1)) {
-  PlaceFood();
+  // PlaceFood();
+}
+
+Game::~Game(){
+  std::cout << "Game destructor" << std::endl;
+  this->snake.alive = false;
+  std::cout << "snake condition: " << this->snake.alive << std::endl;
+  this->normal_food.erase(this->normal_food.begin());
+  this->_condition_normal_food.notify_all(); //notity all threads sleeping that the game is over
+  for(std::thread &t: this->_threads){
+    std::cout << "join thread" << std::endl;
+    t.join();
+    std::cout << "joined" << std::endl;
+  }
+}
+
+void Game::create_normal_foods(){
+  while(true){
+    std::cout << "thread: check if snake is alive" << std::endl;
+    if(!this->snake.alive){
+      std::cout << "snake dead in thread" << std::endl;
+      return;
+    }
+
+    std::cout << "thread: try to lock" << std::endl;
+    std::unique_lock<std::mutex> uniq_lock(this->food_mutex);
+    this->_condition_normal_food.wait(uniq_lock, [this]{return normal_food.empty();});
+    // wait until food is consumed and place another one
+    int x, y;
+    std::cout << "creating new food!" << std::endl;
+    while (true) {
+      x = random_w(engine);
+      y = random_h(engine);
+      // Check that the location is not occupied by a snake item before placing
+      // food.
+      if (!snake.SnakeCell(x, y)) {
+        SDL_Point p;
+        p.x = x;
+        p.y = y;
+        NormalFood f;
+        f.position = p;
+        this->normal_food.push_back(f);
+        break;
+      }
+    }
+  }
+
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -18,14 +65,19 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   Uint32 frame_duration;
   int frame_count = 0;
   bool running = true;
+  std::cout << "creating thread" << std::endl;
+  this->_threads.emplace_back(std::thread(&Game::create_normal_foods, this));
 
+  std::unique_lock<std::mutex> uniq_lock(this->food_mutex, std::defer_lock);
   while (running) {
     frame_start = SDL_GetTicks();
 
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    uniq_lock.lock();
+    renderer.Render(snake, this->normal_food);
+    uniq_lock.unlock();
 
     frame_end = SDL_GetTicks();
 
@@ -58,8 +110,8 @@ void Game::PlaceFood() {
     // Check that the location is not occupied by a snake item before placing
     // food.
     if (!snake.SnakeCell(x, y)) {
-      food.x = x;
-      food.y = y;
+      this->normal_food[0].position.x = x;
+      this->normal_food[0].position.y = y;
       return;
     }
   }
@@ -67,20 +119,32 @@ void Game::PlaceFood() {
 
 void Game::Update() {
   if (!snake.alive) return;
-
+  std::cout << "snake update" << std::endl;
   snake.Update();
 
   int new_x = static_cast<int>(snake.head_x);
   int new_y = static_cast<int>(snake.head_y);
 
-  // Check if there's food over here
-  if (food.x == new_x && food.y == new_y) {
-    score++;
-    PlaceFood();
-    // Grow snake and increase speed.
-    snake.GrowBody();
-    snake.speed += 0.02;
+  // check normal food
+  std::cout << "try to lock inside update" <<  std::endl;
+  std::lock_guard<std::mutex> lck(this->food_mutex);
+  if(!this->normal_food.empty()){
+    NormalFood f = this->normal_food[0];
+
+    // Check if there's food over here
+    if (f.position.x == new_x && f.position.y == new_y) {
+      score++;
+      // remove food from vector and notify thread so it can wake up and create another food
+      std::cout << "consuming food!" << std::endl;
+      this->normal_food.erase(this->normal_food.begin());
+      this->_condition_normal_food.notify_one();
+
+      // Grow snake and increase speed.
+      snake.GrowBody();
+      snake.speed += 0.02;
+    }
   }
+  std::cout << "lock update outside scope" << std::endl;
 }
 
 int Game::GetScore() const { return score; }

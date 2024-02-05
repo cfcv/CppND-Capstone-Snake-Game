@@ -2,6 +2,11 @@
 #define GAME_H
 
 #include <random>
+#include <vector>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include "food.h"
 #include "SDL.h"
 #include "controller.h"
 #include "renderer.h"
@@ -10,14 +15,21 @@
 class Game {
  public:
   Game(std::size_t grid_width, std::size_t grid_height);
+  ~Game();
   void Run(Controller const &controller, Renderer &renderer,
            std::size_t target_frame_duration);
   int GetScore() const;
   int GetSize() const;
 
+  void create_normal_foods();
+
  private:
   Snake snake;
-  SDL_Point food;
+  std::vector<NormalFood> normal_food;
+
+  std::vector<std::thread> _threads;
+  std::mutex food_mutex;
+  std::condition_variable _condition_normal_food;
 
   std::random_device dev;
   std::mt19937 engine;

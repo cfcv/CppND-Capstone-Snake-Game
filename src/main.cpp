@@ -44,9 +44,13 @@ int main() {
   }
   // ------------------------------
 
+  std::cout << "creating renderer" << std::endl;
   Renderer renderer(kScreenWidth, kScreenHeight, kGridWidth, kGridHeight);
+  std::cout << "creating controller" << std::endl;
   Controller controller;
+  std::cout << "creating game" << std::endl;
   Game game(kGridWidth, kGridHeight);
+  std::cout << "game run" << std::endl;
   game.Run(controller, renderer, kMsPerFrame);
   int game_score = game.GetScore();
   std::cout << "Game has terminated successfully!\n";
